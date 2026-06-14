@@ -8,6 +8,7 @@ import { scan } from "./scan.js";
 import { render } from "./report.js";
 import { lintTools, renderLint, type Finding } from "./lint.js";
 import { modelToolSearch, renderModes, type ModeResult } from "./toolsearch.js";
+import { renderHtml, renderBadgeSvg, renderBadgeJson } from "./html.js";
 import {
   snapshotFromScan,
   saveSnapshot,
@@ -61,6 +62,8 @@ program
   .option("-s, --server <name>", "only scan this server from the config")
   .option("-m, --model <id>", `model to count against (${MODELS})`, DEFAULT_MODEL)
   .option("--json", "output raw JSON instead of a chart")
+  .option("--html <file>", "also write a self-contained HTML budget card")
+  .option("--badge <file>", "also write a README badge (.svg static, or .json shields endpoint)")
   .option("--no-color", "disable ANSI colors")
   .action(async (command: string[], o) => {
     const servers = await resolveServers({ config: o.config, server: o.server, command });
@@ -69,6 +72,15 @@ program
       console.log(JSON.stringify(result, null, 2));
     } else {
       console.log(render(result.results, { model: result.model, mode: result.mode, color: o.color }));
+    }
+    if (o.html) {
+      await writeFile(o.html, renderHtml(result), "utf8");
+      console.error(`Wrote HTML report to ${o.html}`);
+    }
+    if (o.badge) {
+      const out = o.badge.endsWith(".json") ? renderBadgeJson(result.total) : renderBadgeSvg(result.total);
+      await writeFile(o.badge, out, "utf8");
+      console.error(`Wrote badge to ${o.badge}`);
     }
   });
 
