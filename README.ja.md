@@ -71,6 +71,7 @@ ctxtax -m claude-sonnet-4-6  # 別のモデルでカウント/価格計算
 ctxtax --json                # 機械可読な出力
 ctxtax lint                  # MCP サーバー作者向けの省トークン提案
 ctxtax toolsearch            # deferred(Tool Search) と always-loaded のコストを試算
+ctxtax --html report.html --badge docs/context-cost.svg   # 共有カード + README バッジ
 ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # 単発サーバー（-- の後ろに）
 ```
 
@@ -111,6 +112,17 @@ deferred upfront:     18.2k tokens (−3.5k upfront; the rest loads on demand)
 
 ここで判明する要点：**stdio サーバーは遅延可能ですが、HTTP/Streamable MCP サーバーは現状遅延されません**（[claude-code#40314](https://github.com/anthropics/claude-code/issues/40314)）—— いずれにせよ全額を先払いします。（試算：遅延可能なサーバーは検索インデックスに name + 1 行スタブのみを保持するものとしてモデル化。）
 
+### 共有レポートとバッジ
+
+`--html` は自己完結の HTML 予算カードを書き出し（開いて共有）、`--badge` は README バッジを書き出します。
+
+```bash
+ctxtax --html report.html              # 共有可能な HTML カード（外部アセットなし）
+ctxtax --badge docs/context-cost.svg   # 静的 SVG バッジ（または .json で shields.io エンドポイント）
+```
+
+あとは README に貼るだけ：`![context cost](docs/context-cost.svg)`。
+
 ## CI でコンテキスト予算を強制する
 
 `ctxtax ci` は予算をチェックに変えます。MCP のコンテキスト税がしきい値を超えるとビルドを失敗させ、PR に**差分**をコメントします —— *「この PR はツールを 4 個追加 = メッセージごとに +3,200 トークン」*。（Claude Code の `/context` は対話では便利ですが CI では動きません。こちらは動きます。）
@@ -147,7 +159,7 @@ jobs:
 
 ## ロードマップ
 
-- **HTML レポート** —— 共有可能な自己完結の予算カード + README バッジ（`context cost: 2.1K ✓`）。
+`scan`、`ci`、`lint`、`toolsearch`、`--html`/`--badge` はすべて出荷済みです。次のアイデア（PR 歓迎）：プロンプトキャッシュを考慮したコスト、エディタ拡張。アイデアがあれば [issue を開いてください](../../issues)。
 
 ## コントリビュート
 

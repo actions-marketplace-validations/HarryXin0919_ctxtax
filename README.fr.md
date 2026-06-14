@@ -71,6 +71,7 @@ ctxtax -m claude-sonnet-4-6  # compter/tarifer avec un autre modèle
 ctxtax --json                # sortie lisible par machine
 ctxtax lint                  # astuces d'économie de tokens pour les auteurs de serveurs MCP
 ctxtax toolsearch            # modélise le coût deferred (Tool Search) vs always-loaded
+ctxtax --html report.html --badge docs/context-cost.svg   # carte partageable + badge README
 ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # serveur ponctuel (après --)
 ```
 
@@ -111,6 +112,17 @@ deferred upfront:     18.2k tokens (−3.5k upfront; the rest loads on demand)
 
 Ce qu'il révèle : **les serveurs stdio sont différables, mais les serveurs MCP HTTP/Streamable ne le sont pas aujourd'hui** ([claude-code#40314](https://github.com/anthropics/claude-code/issues/40314)) —— ils paient le plein tarif en amont quand même. (Estimation : les serveurs différables sont modélisés comme gardant un stub nom + 1 ligne dans l'index de recherche.)
 
+### Rapport et badge partageables
+
+`--html` écrit une carte de budget HTML autonome (ouvrez-la, partagez-la) ; `--badge` écrit un badge README.
+
+```bash
+ctxtax --html report.html              # une carte HTML partageable (sans ressources externes)
+ctxtax --badge docs/context-cost.svg   # un badge SVG statique (ou .json pour un endpoint shields.io)
+```
+
+Ensuite, mettez-le dans votre README : `![context cost](docs/context-cost.svg)`.
+
 ## Budget de contexte en CI
 
 `ctxtax ci` transforme le budget en vérification. Il fait échouer la build quand la taxe de contexte MCP dépasse un seuil et publie un **diff** sur la PR —— *« cette PR ajoute 4 outils = +3 200 tokens/msg »*. (Le `/context` de Claude Code est parfait en interactif, mais il ne tourne pas en CI ; celui-ci, si.)
@@ -147,7 +159,7 @@ L'action récupère le `.ctxtax.json` de la branche de base, rend le diff par ou
 
 ## Feuille de route
 
-- **Rapport HTML** —— une carte de budget autonome et partageable + un badge README (`context cost: 2.1K ✓`).
+`scan`, `ci`, `lint`, `toolsearch`, `--html`/`--badge` sont tous livrés. Prochaines idées (PR bienvenues) : des coûts tenant compte du prompt caching, une extension d'éditeur. Vous en avez une ? [Ouvrez une issue](../../issues).
 
 ## Contribuer
 

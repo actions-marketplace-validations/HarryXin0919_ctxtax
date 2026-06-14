@@ -71,6 +71,7 @@ ctxtax -m claude-sonnet-4-6  # contar/tasar contra otro modelo
 ctxtax --json                # salida legible por máquina
 ctxtax lint                  # consejos de ahorro de tokens para autores de servidores MCP
 ctxtax toolsearch            # modela el coste deferred (Tool Search) vs always-loaded
+ctxtax --html report.html --badge docs/context-cost.svg   # tarjeta compartible + insignia de README
 ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # servidor puntual (después de --)
 ```
 
@@ -111,6 +112,17 @@ deferred upfront:     18.2k tokens (−3.5k upfront; the rest loads on demand)
 
 Lo que revela: **los servidores stdio son diferibles, pero los servidores MCP HTTP/Streamable no se difieren hoy** ([claude-code#40314](https://github.com/anthropics/claude-code/issues/40314)) —— pagan el precio completo por adelantado de todos modos. (Estimación: los servidores diferibles se modelan como si mantuvieran un stub de nombre + 1 línea en el índice de búsqueda.)
 
+### Informe y badge compartibles
+
+`--html` escribe una tarjeta de presupuesto HTML autónoma (ábrela, compártela); `--badge` escribe un badge de README.
+
+```bash
+ctxtax --html report.html              # una tarjeta HTML compartible (sin assets externos)
+ctxtax --badge docs/context-cost.svg   # un badge SVG estático (o .json para un endpoint de shields.io)
+```
+
+Luego ponlo en tu README: `![context cost](docs/context-cost.svg)`.
+
 ## CI: presupuesto de contexto en los PR
 
 `ctxtax ci` convierte el presupuesto en una verificación. Falla la build cuando el impuesto de contexto MCP cruza un umbral y publica un **diff** en el PR —— *"este PR añade 4 herramientas = +3.200 tokens/msg"*. (El `/context` de Claude Code es genial de forma interactiva, pero no corre en CI; esto sí.)
@@ -147,7 +159,7 @@ La acción obtiene el `.ctxtax.json` de la rama base, renderiza el diff por herr
 
 ## Hoja de ruta
 
-- **Informe HTML** —— una tarjeta de presupuesto autónoma y compartible + una insignia de README (`context cost: 2.1K ✓`).
+`scan`, `ci`, `lint`, `toolsearch`, `--html`/`--badge` ya están publicados. Próximas ideas (PRs bienvenidos): costes que consideren el prompt caching, una extensión de editor. ¿Tienes una? [Abre un issue](../../issues).
 
 ## Contribuir
 

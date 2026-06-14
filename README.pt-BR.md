@@ -71,6 +71,7 @@ ctxtax -m claude-sonnet-4-6  # contar/precificar com outro modelo
 ctxtax --json                # saída legível por máquina
 ctxtax lint                  # dicas de economia de tokens para autores de servidores MCP
 ctxtax toolsearch            # modela o custo deferred (Tool Search) vs always-loaded
+ctxtax --html report.html --badge docs/context-cost.svg   # cartão compartilhável + selo de README
 ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # servidor avulso (depois de --)
 ```
 
@@ -111,6 +112,17 @@ deferred upfront:     18.2k tokens (−3.5k upfront; the rest loads on demand)
 
 O que ele revela: **servidores stdio são adiáveis, mas servidores MCP HTTP/Streamable não são adiados hoje** ([claude-code#40314](https://github.com/anthropics/claude-code/issues/40314)) —— eles pagam o preço cheio adiantado de qualquer forma. (Estimativa: servidores adiáveis são modelados como mantendo um stub de nome + 1 linha no índice de busca.)
 
+### Relatório e selo compartilháveis
+
+`--html` grava um cartão de orçamento HTML autônomo (abra, compartilhe); `--badge` grava um selo de README.
+
+```bash
+ctxtax --html report.html              # um cartão HTML compartilhável (sem assets externos)
+ctxtax --badge docs/context-cost.svg   # um selo SVG estático (ou .json para um endpoint do shields.io)
+```
+
+Depois é só colocar no seu README: `![context cost](docs/context-cost.svg)`.
+
 ## Orçamento de contexto em PRs
 
 `ctxtax ci` transforma o orçamento em uma verificação. Faz o build falhar quando o imposto de contexto MCP cruza um limite e publica um **diff** no PR —— *"este PR adiciona 4 ferramentas = +3.200 tokens/msg"*. (O `/context` do Claude Code é ótimo de forma interativa, mas não roda em CI; este roda.)
@@ -147,7 +159,7 @@ A action busca o `.ctxtax.json` do branch base, renderiza o diff por ferramenta,
 
 ## Roteiro
 
-- **Relatório HTML** —— um cartão de orçamento autônomo e compartilhável + um selo de README (`context cost: 2.1K ✓`).
+`scan`, `ci`, `lint`, `toolsearch`, `--html`/`--badge` já foram lançados. Próximas ideias (PRs bem-vindos): custos considerando o prompt caching, uma extensão de editor. Tem uma? [Abra uma issue](../../issues).
 
 ## Contribuindo
 

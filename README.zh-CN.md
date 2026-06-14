@@ -71,6 +71,7 @@ ctxtax -m claude-sonnet-4-6  # 按另一个模型计数/计价
 ctxtax --json                # 机器可读输出
 ctxtax lint                  # 给 MCP server 作者的省 token 建议
 ctxtax toolsearch            # 模拟 deferred(Tool Search) 与 always-loaded 成本
+ctxtax --html report.html --badge docs/context-cost.svg   # 可分享卡片 + README 徽章
 ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # 临时跑一个 server（放在 -- 之后）
 ```
 
@@ -111,6 +112,17 @@ deferred upfront:     18.2k tokens (−3.5k upfront; the rest loads on demand)
 
 它揭示的关键点：**stdio server 可延迟，但 HTTP/Streamable MCP server 目前不会被延迟**（[claude-code#40314](https://github.com/anthropics/claude-code/issues/40314)）—— 它们无论如何都要预先付全价。（估算：可延迟的 server 被建模为在搜索索引里只保留 name + 一行 stub。）
 
+### 可分享报告与徽章
+
+`--html` 写出一个自包含的 HTML 预算卡片（打开即看、可分享）；`--badge` 写出一个 README 徽章。
+
+```bash
+ctxtax --html report.html              # 可分享的 HTML 卡片（无外部依赖）
+ctxtax --badge docs/context-cost.svg   # 静态 SVG 徽章（或 .json = shields.io endpoint）
+```
+
+然后把它放进 README：`![context cost](docs/context-cost.svg)`。
+
 ## 在 CI 中强制 context 预算
 
 `ctxtax ci` 把预算变成一道检查。当 MCP 上下文税超过阈值时让构建失败，并在 PR 上贴出**差异**——*“这个 PR 加了 4 个工具 = 每条消息 +3,200 tokens”*。（Claude Code 的 `/context` 交互时很好用，但它进不了 CI；这个可以。）
@@ -147,7 +159,7 @@ jobs:
 
 ## 路线图
 
-- **HTML 报告** —— 可分享的自包含预算卡片 + README 徽章（`context cost: 2.1K ✓`）。
+`scan`、`ci`、`lint`、`toolsearch`、`--html`/`--badge` 都已 ship。后续想法（欢迎 PR）：计入 prompt 缓存的真实成本、编辑器插件。有想法？[开个 issue](../../issues)。
 
 ## 参与贡献
 

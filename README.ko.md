@@ -71,6 +71,7 @@ ctxtax -m claude-sonnet-4-6  # 다른 모델로 카운트/가격 계산
 ctxtax --json                # 기계가 읽을 수 있는 출력
 ctxtax lint                  # MCP 서버 작성자를 위한 토큰 절약 팁
 ctxtax toolsearch            # deferred(Tool Search) vs always-loaded 비용 모델링
+ctxtax --html report.html --badge docs/context-cost.svg   # 공유 카드 + README 배지
 ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # 일회성 서버(-- 뒤에)
 ```
 
@@ -111,6 +112,17 @@ deferred upfront:     18.2k tokens (−3.5k upfront; the rest loads on demand)
 
 여기서 드러나는 핵심: **stdio 서버는 지연 가능하지만, HTTP/Streamable MCP 서버는 현재 지연되지 않습니다**([claude-code#40314](https://github.com/anthropics/claude-code/issues/40314)) —— 어쨌든 선불로 전액을 냅니다. (추정: 지연 가능한 서버는 검색 인덱스에 name + 한 줄 stub만 유지하는 것으로 모델링.)
 
+### 공유 리포트 & 배지
+
+`--html`은 자체 완결형 HTML 예산 카드를 작성하고(열어서 공유), `--badge`는 README 배지를 작성합니다.
+
+```bash
+ctxtax --html report.html              # 공유 가능한 HTML 카드(외부 의존 없음)
+ctxtax --badge docs/context-cost.svg   # 정적 SVG 배지(또는 .json = shields.io 엔드포인트)
+```
+
+그런 다음 README에 넣으세요: `![context cost](docs/context-cost.svg)`.
+
 ## CI에서 컨텍스트 예산 강제하기
 
 `ctxtax ci`는 예산을 체크로 바꿉니다. MCP 컨텍스트 세금이 임계값을 넘으면 빌드를 실패시키고, PR에 **차이**를 코멘트합니다 —— *"이 PR은 도구 4개 추가 = 메시지당 +3,200 토큰"*. (Claude Code의 `/context`는 대화형으로는 훌륭하지만 CI에서는 실행되지 않습니다. 이건 됩니다.)
@@ -147,7 +159,7 @@ jobs:
 
 ## 로드맵
 
-- **HTML 리포트** —— 공유 가능한 자체 완결형 예산 카드 + README 배지(`context cost: 2.1K ✓`).
+`scan`, `ci`, `lint`, `toolsearch`, `--html`/`--badge` 모두 출시되었습니다. 다음 아이디어(PR 환영): 프롬프트 캐시를 반영한 비용, 에디터 확장. 아이디어가 있으면 [이슈를 열어주세요](../../issues).
 
 ## 기여하기
 

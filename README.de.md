@@ -71,6 +71,7 @@ ctxtax -m claude-sonnet-4-6  # gegen ein anderes Modell zählen/bepreisen
 ctxtax --json                # maschinenlesbare Ausgabe
 ctxtax lint                  # Token-Spartipps für MCP-Server-Autoren
 ctxtax toolsearch            # modelliert deferred (Tool Search) vs always-loaded Kosten
+ctxtax --html report.html --badge docs/context-cost.svg   # teilbare Karte + README-Badge
 ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # einmaliger Server (nach --)
 ```
 
@@ -111,6 +112,17 @@ deferred upfront:     18.2k tokens (−3.5k upfront; the rest loads on demand)
 
 Was es aufdeckt: **stdio-Server sind aufschiebbar, aber HTTP/Streamable-MCP-Server werden heute nicht aufgeschoben** ([claude-code#40314](https://github.com/anthropics/claude-code/issues/40314)) —— sie zahlen trotzdem den vollen Preis vorab. (Schätzung: aufschiebbare Server werden so modelliert, als behielten sie nur einen Name-+-1-Zeilen-Stub im Suchindex.)
 
+### Teilbarer Bericht & Badge
+
+`--html` schreibt eine eigenständige HTML-Budget-Karte (öffnen, teilen); `--badge` schreibt ein README-Badge.
+
+```bash
+ctxtax --html report.html              # eine teilbare HTML-Karte (ohne externe Assets)
+ctxtax --badge docs/context-cost.svg   # ein statisches SVG-Badge (oder .json für einen shields.io-Endpoint)
+```
+
+Dann ins README einbinden: `![context cost](docs/context-cost.svg)`.
+
 ## Kontextbudget in CI
 
 `ctxtax ci` macht aus dem Budget eine Prüfung. Es lässt den Build fehlschlagen, wenn die MCP-Kontextsteuer einen Schwellenwert überschreitet, und postet einen **Diff** auf dem PR —— *„dieser PR fügt 4 Tools hinzu = +3.200 Tokens/Nachricht"*. (Das `/context` von Claude Code ist interaktiv großartig, läuft aber nicht in CI; dieses schon.)
@@ -147,7 +159,7 @@ Die Action holt die `.ctxtax.json` des Base-Branch, rendert den Diff pro Tool, e
 
 ## Roadmap
 
-- **HTML-Bericht** —— eine teilbare, eigenständige Budget-Karte + ein README-Badge (`context cost: 2.1K ✓`).
+`scan`, `ci`, `lint`, `toolsearch`, `--html`/`--badge` sind alle ausgeliefert. Nächste Ideen (PRs willkommen): Kosten mit Prompt-Caching, eine Editor-Erweiterung. Hast du eine? [Öffne ein Issue](../../issues).
 
 ## Mitwirken
 
