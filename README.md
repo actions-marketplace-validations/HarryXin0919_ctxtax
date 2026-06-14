@@ -16,7 +16,7 @@
 
 <samp>**English** · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt-BR.md)</samp>
 
-[Why](#why-accurate-counts-matter) · [How it works](#how-it-works) · [Install](#install) · [Usage](#usage) · [CI gate](#ci-enforce-a-context-budget-on-prs) · [Roadmap](#roadmap)
+[Why](#why-accurate-counts-matter) · [How it works](#how-it-works) · [Install](#install) · [Usage](#usage) · [Lint](#lint-for-mcp-server-authors) · [Tool Search](#tool-search-modelling) · [CI gate](#ci-enforce-a-context-budget-on-prs) · [Roadmap](#roadmap)
 
 </div>
 
@@ -71,6 +71,7 @@ ctxtax -s github             # just one server from the config
 ctxtax -m claude-sonnet-4-6  # count/price against another model
 ctxtax --json                # machine-readable output
 ctxtax lint                  # token-saving tips for MCP server authors
+ctxtax toolsearch            # model deferred (Tool Search) vs always-loaded cost
 ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # one-off server (after --)
 ```
 
@@ -96,6 +97,20 @@ filesystem / search_files
   }
 }
 ```
+
+### Tool Search modelling
+
+Anthropic's [Tool Search](https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool) defers tool definitions — they load on demand instead of all upfront. `ctxtax toolsearch` estimates what you'd pay **upfront** with it on vs the always-loaded cost:
+
+```text
+  server                 always  deferred↑   note
+  filesystem               4.1k        0.6k   stdio — deferrable
+  github                  17.6k       17.6k   HTTP/Streamable — not deferred today (#40314)
+always-loaded total: 21.7k tokens
+deferred upfront:     18.2k tokens (−3.5k upfront; the rest loads on demand)
+```
+
+The catch it surfaces: **stdio servers are deferrable, but HTTP/Streamable MCP servers are not deferred today** ([claude-code#40314](https://github.com/anthropics/claude-code/issues/40314)) — they pay full price upfront regardless. (Estimate: deferrable servers are modelled as keeping a name + 1-line stub in the search index.)
 
 ## CI: enforce a context budget on PRs
 
@@ -133,7 +148,6 @@ The action fetches the base branch's `.ctxtax.json`, renders the per-tool diff, 
 
 ## Roadmap
 
-- **Tool Search modelling** — `deferred` vs `alwaysLoad` comparison, so you see what's paid up-front vs on-demand.
 - **HTML report** — a shareable, self-contained budget card + a README badge (`context cost: 2.1K ✓`).
 
 ## Contributing

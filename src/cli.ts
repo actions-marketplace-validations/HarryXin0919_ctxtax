@@ -7,6 +7,7 @@ import { DEFAULT_MODEL, PRICING, makeCounter } from "./count.js";
 import { scan } from "./scan.js";
 import { render } from "./report.js";
 import { lintTools, renderLint, type Finding } from "./lint.js";
+import { modelToolSearch, renderModes, type ModeResult } from "./toolsearch.js";
 import {
   snapshotFromScan,
   saveSnapshot,
@@ -139,6 +140,37 @@ program
     }
     if (o.json) console.log(JSON.stringify(all, null, 2));
     else console.log(renderLint(all, o.color));
+  });
+
+program
+  .command("toolsearch")
+  .description("Model Tool Search: always-loaded vs deferred upfront context cost (estimate)")
+  .option("-c, --config <path>", "path to .mcp.json", ".mcp.json")
+  .option("-s, --server <name>", "only model this server from the config")
+  .option("-m, --model <id>", `model to count against (${MODELS})`, DEFAULT_MODEL)
+  .option("--json", "output raw JSON instead of a report")
+  .option("--no-color", "disable ANSI colors")
+  .action(async (o) => {
+    const servers = await resolveServers({ config: o.config, server: o.server });
+    const counter = makeCounter(o.model);
+    const results: ModeResult[] = [];
+    for (const s of servers) {
+      try {
+        const tools = await listTools(s);
+        results.push(await modelToolSearch(s, tools, counter));
+      } catch (err) {
+        results.push({
+          server: s.name,
+          deferrable: false,
+          reason: "",
+          alwaysTokens: 0,
+          deferredUpfrontTokens: 0,
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
+    if (o.json) console.log(JSON.stringify({ model: o.model, mode: counter.mode, results }, null, 2));
+    else console.log(renderModes(results, { model: o.model, mode: counter.mode, color: o.color }));
   });
 
 program.parseAsync().catch((err) => {
