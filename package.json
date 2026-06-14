@@ -33,6 +33,7 @@
   "repository": { "type": "git", "url": "git+https://github.com/HarryXin0919/ctxtax.git" },
   "homepage": "https://github.com/HarryXin0919/ctxtax#readme",
   "bugs": { "url": "https://github.com/HarryXin0919/ctxtax/issues" },
+  "publishConfig": { "registry": "https://registry.npmjs.org" },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.1",
     "@modelcontextprotocol/sdk": "^1.29.0",
