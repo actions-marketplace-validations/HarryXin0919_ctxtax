@@ -18,6 +18,8 @@
 
 [Pourquoi](#pourquoi-la-précision-compte) · [Fonctionnement](#comment-ça-marche) · [Installation](#installation) · [Utilisation](#utilisation) · [Lint](#lint-pour-les-auteurs-de-serveurs-mcp) · [Tool Search](#modélisation-de-tool-search) · [Garde-fou CI](#budget-de-contexte-en-ci) · [Feuille de route](#feuille-de-route)
 
+<img src="docs/hero.svg" alt="ctxtax — see your MCP context budget" width="760">
+
 </div>
 
 ---

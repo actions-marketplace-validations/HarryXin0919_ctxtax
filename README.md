@@ -18,6 +18,8 @@
 
 [Why](#why-accurate-counts-matter) · [How it works](#how-it-works) · [Install](#install) · [Usage](#usage) · [Lint](#lint-for-mcp-server-authors) · [Tool Search](#tool-search-modelling) · [CI gate](#ci-enforce-a-context-budget-on-prs) · [Roadmap](#roadmap)
 
+<img src="docs/hero.svg" alt="ctxtax — see your MCP context budget" width="760">
+
 </div>
 
 ---
@@ -72,6 +74,7 @@ ctxtax -m claude-sonnet-4-6  # count/price against another model
 ctxtax --json                # machine-readable output
 ctxtax lint                  # token-saving tips for MCP server authors
 ctxtax toolsearch            # model deferred (Tool Search) vs always-loaded cost
+ctxtax --html report.html --badge docs/context-cost.svg   # shareable card + README badge
 ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # one-off server (after --)
 ```
 
@@ -112,6 +115,17 @@ deferred upfront:     18.2k tokens (−3.5k upfront; the rest loads on demand)
 
 The catch it surfaces: **stdio servers are deferrable, but HTTP/Streamable MCP servers are not deferred today** ([claude-code#40314](https://github.com/anthropics/claude-code/issues/40314)) — they pay full price upfront regardless. (Estimate: deferrable servers are modelled as keeping a name + 1-line stub in the search index.)
 
+### Shareable report & badge
+
+`--html` writes a self-contained HTML budget card (open it, share it); `--badge` writes a README badge.
+
+```bash
+ctxtax --html report.html              # a shareable HTML card (no external assets)
+ctxtax --badge docs/context-cost.svg   # a static SVG badge (or .json for a shields.io endpoint)
+```
+
+Then drop it in your README: `![context cost](docs/context-cost.svg)`.
+
 ## CI: enforce a context budget on PRs
 
 `ctxtax ci` turns the budget into a check. It fails the build when your MCP context tax crosses a threshold, and posts a **diff** on the PR — *"this PR adds 4 tools = +3,200 tokens/msg."* (Claude Code's `/context` is great interactively, but it can't run in CI; this can.)
@@ -148,7 +162,7 @@ The action fetches the base branch's `.ctxtax.json`, renders the per-tool diff, 
 
 ## Roadmap
 
-- **HTML report** — a shareable, self-contained budget card + a README badge (`context cost: 2.1K ✓`).
+`scan`, `ci`, `lint`, and `toolsearch` are all shipped. Next ideas (PRs welcome): prompt-caching-aware costs, an editor extension. Have one? [Open an issue](../../issues).
 
 ## Contributing
 

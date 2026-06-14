@@ -18,6 +18,8 @@
 
 [なぜ正確さが重要か](#正確なカウントが重要な理由) · [仕組み](#仕組み) · [インストール](#インストール) · [使い方](#使い方) · [Lint](#lintmcp-サーバー作者向け) · [Tool Search](#tool-search-のモデリング) · [CI ゲート](#ci-でコンテキスト予算を強制する) · [ロードマップ](#ロードマップ)
 
+<img src="docs/hero.svg" alt="ctxtax — see your MCP context budget" width="760">
+
 </div>
 
 ---

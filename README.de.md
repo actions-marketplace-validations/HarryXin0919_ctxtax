@@ -18,6 +18,8 @@
 
 [Warum](#warum-genaue-zählung-zählt) · [Funktionsweise](#funktionsweise) · [Installation](#installation) · [Verwendung](#verwendung) · [Lint](#lint-für-mcp-server-autoren) · [Tool Search](#tool-search-modellierung) · [CI-Gate](#kontextbudget-in-ci) · [Roadmap](#roadmap)
 
+<img src="docs/hero.svg" alt="ctxtax — see your MCP context budget" width="760">
+
 </div>
 
 ---

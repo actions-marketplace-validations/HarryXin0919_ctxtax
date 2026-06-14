@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="430" viewBox="0 0 760 430" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+  <rect x="1" y="1" width="758" height="428" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1.5"/>
+  <!-- title bar -->
+  <rect x="1.5" y="1.5" width="757" height="36" rx="12" fill="#161b22"/>
+  <rect x="1.5" y="24" width="757" height="14" fill="#161b22"/>
+  <circle cx="24" cy="19" r="6" fill="#ff5f56"/>
+  <circle cx="44" cy="19" r="6" fill="#ffbd2e"/>
+  <circle cx="64" cy="19" r="6" fill="#27c93f"/>
+  <text x="380" y="24" text-anchor="middle" fill="#8b949e" font-size="13">ctxtax — MCP context budget</text>
+
+  <g font-size="14">
+    <!-- command -->
+    <text x="24" y="74"><tspan fill="#27c93f">$</tspan><tspan fill="#c9d1d9"> ctxtax</tspan></text>
+
+    <!-- github server -->
+    <text x="24" y="106"><tspan fill="#ffffff" font-weight="bold">github</tspan><tspan fill="#58a6ff">  17.6k tokens</tspan><tspan fill="#6e7681"> (26 tools)  ≈ $0.0879/msg</tspan></text>
+    <text x="40" y="130" fill="#8b949e">create_or_update_file</text>
+    <rect x="300" y="119" width="300" height="12" rx="2" fill="#f0b429"/>
+    <text x="612" y="130" fill="#c9d1d9">1.4k</text>
+    <text x="40" y="152" fill="#8b949e">create_pull_request</text>
+    <rect x="300" y="141" width="258" height="12" rx="2" fill="#f0b429"/>
+    <text x="570" y="152" fill="#c9d1d9">1.2k</text>
+    <text x="40" y="174" fill="#8b949e">list_commits</text>
+    <rect x="300" y="163" width="163" height="12" rx="2" fill="#f0b429"/>
+    <text x="475" y="174" fill="#c9d1d9">760</text>
+
+    <!-- filesystem server -->
+    <text x="24" y="206"><tspan fill="#ffffff" font-weight="bold">filesystem</tspan><tspan fill="#58a6ff">  4.1k tokens</tspan><tspan fill="#6e7681"> (11 tools)  ≈ $0.0205/msg</tspan></text>
+    <text x="40" y="230" fill="#8b949e">read_text_file</text>
+    <rect x="300" y="219" width="120" height="12" rx="2" fill="#f0b429"/>
+    <text x="432" y="230" fill="#c9d1d9">240</text>
+    <text x="40" y="252" fill="#8b949e">write_file</text>
+    <rect x="300" y="241" width="64" height="12" rx="2" fill="#f0b429"/>
+    <text x="376" y="252" fill="#c9d1d9">128</text>
+
+    <line x1="24" y1="284" x2="736" y2="284" stroke="#30363d" stroke-width="1"/>
+    <text x="24" y="312"><tspan fill="#3fb950" font-weight="bold">TOTAL context tax: 21.7k tokens</tspan><tspan fill="#6e7681">  ≈ $0.1084/msg  [claude-opus-4-8]</tspan></text>
+    <text x="24" y="338" fill="#6e7681" font-size="12.5">Sent on every request that exposes these tools (minus prompt caching).</text>
+
+    <!-- counted-not-estimated footnote -->
+    <text x="24" y="384" fill="#484f58" font-size="12">counted with Anthropic count_tokens — not tiktoken</text>
+    <text x="736" y="384" text-anchor="end" fill="#484f58" font-size="12">npx ctxtax</text>
+  </g>
+</svg>

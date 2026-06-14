@@ -18,6 +18,8 @@
 
 [정확성이 중요한 이유](#정확한-카운트가-중요한-이유) · [작동 방식](#작동-방식) · [설치](#설치) · [사용법](#사용법) · [Lint](#lint-mcp-서버-작성자용) · [Tool Search](#tool-search-모델링) · [CI 게이트](#ci에서-컨텍스트-예산-강제하기) · [로드맵](#로드맵)
 
+<img src="docs/hero.svg" alt="ctxtax — see your MCP context budget" width="760">
+
 </div>
 
 ---

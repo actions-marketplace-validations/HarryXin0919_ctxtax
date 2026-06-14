@@ -18,6 +18,8 @@
 
 [Por quê](#por-que-a-contagem-precisa-importa) · [Como funciona](#como-funciona) · [Instalação](#instalação) · [Uso](#uso) · [Lint](#lint-para-autores-de-servidores-mcp) · [Tool Search](#modelagem-de-tool-search) · [Gate de CI](#orçamento-de-contexto-em-prs) · [Roteiro](#roteiro)
 
+<img src="docs/hero.svg" alt="ctxtax — see your MCP context budget" width="760">
+
 </div>
 
 ---

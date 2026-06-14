@@ -18,6 +18,8 @@
 
 [为什么要精确](#为什么必须精确计数) · [工作原理](#工作原理) · [安装](#安装) · [使用](#使用) · [Lint](#lint给-mcp-server-作者) · [Tool Search 建模](#tool-search-建模) · [CI 预算闸](#在-ci-中强制-context-预算) · [路线图](#路线图)
 
+<img src="docs/hero.svg" alt="ctxtax — see your MCP context budget" width="760">
+
 </div>
 
 ---
