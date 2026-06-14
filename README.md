@@ -1,41 +1,64 @@
-# ctxtax
+<div align="center">
 
-**See exactly how many context tokens every MCP server and tool costs your Claude requests — before you say a single word.**
+# 🧮 ctxtax
 
-Each MCP tool you connect quietly injects its JSON schema into the model's context on *every* request. A handful of servers can burn 30–60k tokens of "context tax" before your first prompt — you pay for it on each turn, and it crowds out the window you actually wanted to use.
+### See exactly how many context tokens every MCP server and tool costs your Claude requests — *before you say a word.*
+
+[![npm version](https://img.shields.io/npm/v/ctxtax?color=cb3837&logo=npm&label=npm)](https://www.npmjs.com/package/ctxtax)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![node](https://img.shields.io/badge/node-%E2%89%A518-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-compatible-7C3AED)](https://modelcontextprotocol.io)
+[![built for Claude](https://img.shields.io/badge/built%20for-Claude-D97757)](https://claude.com)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#contributing)
+
+`#mcp` · `#claude` · `#anthropic` · `#tokens` · `#context-window` · `#cli` · `#linter`
+
+<samp>**English** · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt-BR.md)</samp>
+
+[Why](#why-accurate-counts-matter) · [How it works](#how-it-works) · [Install](#install) · [Usage](#usage) · [CI gate](#ci-enforce-a-context-budget-on-prs) · [Roadmap](#roadmap)
+
+</div>
+
+---
+
+Every MCP tool you connect quietly injects its JSON schema into the model's context on **every** request. A handful of servers can burn 30–60k tokens of "context tax" before your first prompt — you pay it on each turn, and it crowds out the window you actually wanted to use.
 
 `ctxtax` connects to your MCP servers, reads their real tool definitions, and tells you what they cost — per tool, per server, in tokens and in dollars.
 
-```
-github  17.6k tokens (26 tools)  ≈ $0.08792/msg
+```text
+github  17.6k tokens (26 tools)  ≈ $0.0879/msg
   create_or_update_file      ████████████████████████████ 1.4k
   create_pull_request        ████████████████████████ 1.2k
   list_commits               ███████████████ 760
   ...
-filesystem  4.1k tokens (11 tools)  ≈ $0.02050/msg
+filesystem  4.1k tokens (11 tools)  ≈ $0.0205/msg
   ...
 ────────────────────────────────────────────────
-TOTAL context tax: 21.7k tokens  ≈ $0.10842/msg  [model: claude-opus-4-8]
+TOTAL context tax: 21.7k tokens  ≈ $0.1084/msg  [model: claude-opus-4-8]
 These tokens are sent on every request that exposes these tools (minus prompt caching).
 ```
 
-## Why accurate counts matter (and why not tiktoken)
+<!-- Tip: drop a real screenshot at docs/hero.png and uncomment the line below for a prettier hero. -->
+<!-- <div align="center"><img src="docs/hero.png" width="720" alt="ctxtax output"></div> -->
 
-Most "token counter" tools reach for `tiktoken`. **That's OpenAI's tokenizer — it undercounts Claude by ~15–20% on normal text, and worse on JSON schemas and non-English.** A budgeting tool that's 20% wrong is worse than no tool.
+## Why accurate counts matter
 
-`ctxtax` counts the way Claude actually counts: it calls Anthropic's official [`/v1/messages/count_tokens`](https://platform.claude.com/docs/en/build-with-claude/token-counting) endpoint (free, model-specific). Set `ANTHROPIC_API_KEY` and you get exact numbers. No key? You still get a clearly-labeled rough estimate — never a number pretending to be exact.
+Most "token counter" tools reach for `tiktoken`. **That's OpenAI's tokenizer — it undercounts Claude by ~15–20% on normal text, and worse on JSON schemas and non‑English.** A budgeting tool that's 20% wrong is worse than no tool.
+
+`ctxtax` counts the way Claude actually counts: it calls Anthropic's official [`/v1/messages/count_tokens`](https://platform.claude.com/docs/en/build-with-claude/token-counting) endpoint (free, model‑specific). Set `ANTHROPIC_API_KEY` and you get exact numbers. No key? You still get a clearly‑labeled estimate — never a number pretending to be exact.
 
 ## How it works
 
 1. **Discover** — reads your `.mcp.json` (or takes a server command directly).
 2. **Connect** — speaks MCP over stdio or Streamable HTTP and calls `tools/list` to get the *real* schemas, exactly as your client sends them.
-3. **Count** — converts each tool to the Anthropic tool shape and measures its **marginal** cost: `count_tokens(with the tool) − count_tokens(baseline)`. That's the number of tokens the tool's definition adds to every request, per the model's own tokenizer.
+3. **Count** — converts each tool to the Anthropic tool shape and measures its **marginal** cost: `count_tokens(with the tool) − count_tokens(baseline)`.
 4. **Report** — a sorted bar chart per server, totals, and the $/message at your chosen model's input price.
 
 ## Install
 
 ```bash
-npm install -g ctxtax     # or: npx ctxtax
+npm install -g ctxtax          # or: npx ctxtax
 export ANTHROPIC_API_KEY=sk-ant-...   # optional but recommended for exact counts
 ```
 
@@ -87,7 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: <your-org>/ctxtax@v0           # this repo ships an action.yml
+      - uses: HarryXin0919/ctxtax@v0.1.0
         with:
           max-tokens: "30000"
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}   # optional; exact counts
@@ -95,20 +118,16 @@ jobs:
 
 The action fetches the base branch's `.ctxtax.json`, renders the per-tool diff, posts/updates a single PR comment, writes a job summary, and fails the check if you blow the budget.
 
-## Develop
-
-```bash
-npm install
-npm run dev -- -- npx -y @modelcontextprotocol/server-filesystem /tmp
-npm run build && npm start
-```
-
 ## Roadmap
 
 - **Lint** — actionable suggestions for MCP **server authors**: over-long descriptions, redundant schema, "this could be ~400 tokens lighter."
 - **Tool Search modelling** — `deferred` vs `alwaysLoad` comparison, so you see what's paid up-front vs on-demand.
 - **HTML report** — a shareable, self-contained budget card + a README badge (`context cost: 2.1K ✓`).
 
+## Contributing
+
+Issues and PRs welcome. `npm install`, then `npm run dev -- -- npx -y @modelcontextprotocol/server-filesystem /tmp` to try it locally.
+
 ## License
 
-MIT
+[MIT](LICENSE) © Harry Xin
