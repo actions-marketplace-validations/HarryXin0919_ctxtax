@@ -1,0 +1,42 @@
+{
+  "name": "ctxtax",
+  "version": "0.1.0",
+  "description": "See exactly how many context tokens each MCP server and tool costs your Claude requests — accurate counts via Anthropic's token API, not tiktoken.",
+  "type": "module",
+  "bin": {
+    "ctxtax": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "start": "node dist/cli.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "anthropic",
+    "tokens",
+    "context-window",
+    "cli",
+    "linter"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "commander": "^15.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  }
+}
