@@ -16,7 +16,7 @@
 
 <samp>[English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · **한국어** · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt-BR.md)</samp>
 
-[정확성이 중요한 이유](#정확한-카운트가-중요한-이유) · [작동 방식](#작동-방식) · [설치](#설치) · [사용법](#사용법) · [CI 게이트](#ci에서-컨텍스트-예산-강제하기) · [로드맵](#로드맵)
+[정확성이 중요한 이유](#정확한-카운트가-중요한-이유) · [작동 방식](#작동-방식) · [설치](#설치) · [사용법](#사용법) · [Lint](#lint-mcp-서버-작성자용) · [Tool Search](#tool-search-모델링) · [CI 게이트](#ci에서-컨텍스트-예산-강제하기) · [로드맵](#로드맵)
 
 </div>
 
@@ -67,6 +67,8 @@ ctxtax -c path/to/.mcp.json  # 특정 설정 파일
 ctxtax -s github             # 설정의 특정 서버만
 ctxtax -m claude-sonnet-4-6  # 다른 모델로 카운트/가격 계산
 ctxtax --json                # 기계가 읽을 수 있는 출력
+ctxtax lint                  # MCP 서버 작성자를 위한 토큰 절약 팁
+ctxtax toolsearch            # deferred(Tool Search) vs always-loaded 비용 모델링
 ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # 일회성 서버(-- 뒤에)
 ```
 
@@ -80,6 +82,32 @@ ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # 일회성 서�
   }
 }
 ```
+
+### Lint (MCP 서버 작성자용)
+
+`ctxtax lint`는 도구를 비싸게 만드는 요인 —— 너무 긴 description(정확히 측정), 비대한 스키마, 거대한 enum, 중복 title —— 을 절약 가능한 토큰 추정치와 함께 짚어줍니다:
+
+```text
+filesystem / search_files
+  ✖ [long-description] description is ~121 tokens (target ≤ 120). Keep only what Claude needs… (~1 token saveable)
+  • [verbose-tool] the whole tool is ~206 tokens — among the most expensive; trim the schema or split it.
+────────────────────────────────────────────────
+27 findings  ~859 tokens/msg recoverable
+```
+
+### Tool Search 모델링
+
+Anthropic의 [Tool Search](https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool)는 도구 정의를 지연 로드합니다 —— 전부 미리 로드하지 않고 필요할 때 로드합니다. `ctxtax toolsearch`는 이를 켰을 때의 **선불** 비용을 always-loaded 비용과 비교해 추정합니다:
+
+```text
+  server                 always  deferred↑   note
+  filesystem               4.1k        0.6k   stdio — deferrable
+  github                  17.6k       17.6k   HTTP/Streamable — not deferred today (#40314)
+always-loaded total: 21.7k tokens
+deferred upfront:     18.2k tokens (−3.5k upfront; the rest loads on demand)
+```
+
+여기서 드러나는 핵심: **stdio 서버는 지연 가능하지만, HTTP/Streamable MCP 서버는 현재 지연되지 않습니다**([claude-code#40314](https://github.com/anthropics/claude-code/issues/40314)) —— 어쨌든 선불로 전액을 냅니다. (추정: 지연 가능한 서버는 검색 인덱스에 name + 한 줄 stub만 유지하는 것으로 모델링.)
 
 ## CI에서 컨텍스트 예산 강제하기
 
@@ -117,8 +145,6 @@ jobs:
 
 ## 로드맵
 
-- **Lint** —— MCP **서버 작성자**를 위한 실행 가능한 제안: 너무 긴 description, 중복 스키마, "여기서 약 400 토큰 절약 가능".
-- **Tool Search 모델링** —— `deferred` vs `alwaysLoad` 비교로 선불 비용과 온디맨드 비용을 가시화.
 - **HTML 리포트** —— 공유 가능한 자체 완결형 예산 카드 + README 배지(`context cost: 2.1K ✓`).
 
 ## 기여하기

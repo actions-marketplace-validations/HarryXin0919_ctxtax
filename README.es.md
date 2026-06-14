@@ -16,7 +16,7 @@
 
 <samp>[English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · **Español** · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt-BR.md)</samp>
 
-[Por qué](#por-qué-importa-la-precisión) · [Cómo funciona](#cómo-funciona) · [Instalación](#instalación) · [Uso](#uso) · [Puerta de CI](#ci-presupuesto-de-contexto-en-los-pr) · [Hoja de ruta](#hoja-de-ruta)
+[Por qué](#por-qué-importa-la-precisión) · [Cómo funciona](#cómo-funciona) · [Instalación](#instalación) · [Uso](#uso) · [Lint](#lint-para-autores-de-servidores-mcp) · [Tool Search](#modelado-de-tool-search) · [Puerta de CI](#ci-presupuesto-de-contexto-en-los-pr) · [Hoja de ruta](#hoja-de-ruta)
 
 </div>
 
@@ -67,6 +67,8 @@ ctxtax -c path/to/.mcp.json  # un archivo de configuración específico
 ctxtax -s github             # solo un servidor de la configuración
 ctxtax -m claude-sonnet-4-6  # contar/tasar contra otro modelo
 ctxtax --json                # salida legible por máquina
+ctxtax lint                  # consejos de ahorro de tokens para autores de servidores MCP
+ctxtax toolsearch            # modela el coste deferred (Tool Search) vs always-loaded
 ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # servidor puntual (después de --)
 ```
 
@@ -80,6 +82,32 @@ ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # servidor puntu
   }
 }
 ```
+
+### Lint (para autores de servidores MCP)
+
+`ctxtax lint` señala qué encarece tus herramientas —— descripciones demasiado largas (medidas con exactitud), esquemas inflados, enums enormes, títulos redundantes —— con una estimación de los tokens que ahorrarías:
+
+```text
+filesystem / search_files
+  ✖ [long-description] description is ~121 tokens (target ≤ 120). Keep only what Claude needs… (~1 token saveable)
+  • [verbose-tool] the whole tool is ~206 tokens — among the most expensive; trim the schema or split it.
+────────────────────────────────────────────────
+27 findings  ~859 tokens/msg recoverable
+```
+
+### Modelado de Tool Search
+
+El [Tool Search](https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool) de Anthropic difiere las definiciones de herramientas —— se cargan bajo demanda en vez de todas por adelantado. `ctxtax toolsearch` estima lo que pagarías **por adelantado** con él activado frente al coste always-loaded:
+
+```text
+  server                 always  deferred↑   note
+  filesystem               4.1k        0.6k   stdio — deferrable
+  github                  17.6k       17.6k   HTTP/Streamable — not deferred today (#40314)
+always-loaded total: 21.7k tokens
+deferred upfront:     18.2k tokens (−3.5k upfront; the rest loads on demand)
+```
+
+Lo que revela: **los servidores stdio son diferibles, pero los servidores MCP HTTP/Streamable no se difieren hoy** ([claude-code#40314](https://github.com/anthropics/claude-code/issues/40314)) —— pagan el precio completo por adelantado de todos modos. (Estimación: los servidores diferibles se modelan como si mantuvieran un stub de nombre + 1 línea en el índice de búsqueda.)
 
 ## CI: presupuesto de contexto en los PR
 
@@ -117,8 +145,6 @@ La acción obtiene el `.ctxtax.json` de la rama base, renderiza el diff por herr
 
 ## Hoja de ruta
 
-- **Lint** —— sugerencias accionables para **autores de servidores** MCP: descripciones demasiado largas, esquema redundante, "esto podría pesar ~400 tokens menos".
-- **Modelado de Tool Search** —— comparación `deferred` vs `alwaysLoad`, para ver qué se paga por adelantado y qué bajo demanda.
 - **Informe HTML** —— una tarjeta de presupuesto autónoma y compartible + una insignia de README (`context cost: 2.1K ✓`).
 
 ## Contribuir

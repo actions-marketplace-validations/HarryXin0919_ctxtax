@@ -16,7 +16,7 @@
 
 <samp>[English](README.md) · [简体中文](README.zh-CN.md) · **繁體中文** · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt-BR.md)</samp>
 
-[為什麼要精確](#為什麼必須精確計數) · [運作原理](#運作原理) · [安裝](#安裝) · [使用](#使用) · [CI 預算閘](#在-ci-中強制-context-預算) · [藍圖](#藍圖)
+[為什麼要精確](#為什麼必須精確計數) · [運作原理](#運作原理) · [安裝](#安裝) · [使用](#使用) · [Lint](#lint給-mcp-server-作者) · [Tool Search 建模](#tool-search-建模) · [CI 預算閘](#在-ci-中強制-context-預算) · [藍圖](#藍圖)
 
 </div>
 
@@ -67,6 +67,8 @@ ctxtax -c path/to/.mcp.json  # 指定設定檔
 ctxtax -s github             # 只掃設定裡的某一個 server
 ctxtax -m claude-sonnet-4-6  # 依另一個模型計數/計價
 ctxtax --json                # 機器可讀輸出
+ctxtax lint                  # 給 MCP server 作者的省 token 建議
+ctxtax toolsearch            # 模擬 deferred(Tool Search) 與 always-loaded 成本
 ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # 臨時跑一個 server（放在 -- 之後）
 ```
 
@@ -80,6 +82,32 @@ ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # 臨時跑一�
   }
 }
 ```
+
+### Lint（給 MCP server 作者）
+
+`ctxtax lint` 指出是什麼讓你的工具變貴 —— 過長的 description（精確測量）、臃腫的 schema、超大 enum、冗餘 title —— 並估算你能省下的 token：
+
+```text
+filesystem / search_files
+  ✖ [long-description] description is ~121 tokens (target ≤ 120). Keep only what Claude needs… (~1 token saveable)
+  • [verbose-tool] the whole tool is ~206 tokens — among the most expensive; trim the schema or split it.
+────────────────────────────────────────────────
+27 findings  ~859 tokens/msg recoverable
+```
+
+### Tool Search 建模
+
+Anthropic 的 [Tool Search](https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool) 會延遲載入工具定義 —— 按需載入而非全部預先載入。`ctxtax toolsearch` 估算開啟它後你**預先**要付多少，對比 always-loaded 成本：
+
+```text
+  server                 always  deferred↑   note
+  filesystem               4.1k        0.6k   stdio — deferrable
+  github                  17.6k       17.6k   HTTP/Streamable — not deferred today (#40314)
+always-loaded total: 21.7k tokens
+deferred upfront:     18.2k tokens (−3.5k upfront; the rest loads on demand)
+```
+
+它揭示的關鍵點：**stdio server 可延遲，但 HTTP/Streamable MCP server 目前不會被延遲**（[claude-code#40314](https://github.com/anthropics/claude-code/issues/40314)）—— 它們無論如何都要預先付全價。（估算：可延遲的 server 被建模為在搜尋索引裡只保留 name + 一行 stub。）
 
 ## 在 CI 中強制 context 預算
 
@@ -117,8 +145,6 @@ jobs:
 
 ## 藍圖
 
-- **Lint** —— 給 MCP **server 作者**的可執行建議：過長的 description、冗餘 schema、「這裡可省約 400 token」。
-- **Tool Search 建模** —— `deferred` 與 `alwaysLoad` 對比，看清哪些是預先付費、哪些是按需載入。
 - **HTML 報告** —— 可分享的自包含預算卡片 + README 徽章（`context cost: 2.1K ✓`）。
 
 ## 參與貢獻

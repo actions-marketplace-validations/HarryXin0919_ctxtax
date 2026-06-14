@@ -16,7 +16,7 @@
 
 <samp>[English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · **日本語** · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt-BR.md)</samp>
 
-[なぜ正確さが重要か](#正確なカウントが重要な理由) · [仕組み](#仕組み) · [インストール](#インストール) · [使い方](#使い方) · [CI ゲート](#ci-でコンテキスト予算を強制する) · [ロードマップ](#ロードマップ)
+[なぜ正確さが重要か](#正確なカウントが重要な理由) · [仕組み](#仕組み) · [インストール](#インストール) · [使い方](#使い方) · [Lint](#lintmcp-サーバー作者向け) · [Tool Search](#tool-search-のモデリング) · [CI ゲート](#ci-でコンテキスト予算を強制する) · [ロードマップ](#ロードマップ)
 
 </div>
 
@@ -67,6 +67,8 @@ ctxtax -c path/to/.mcp.json  # 特定の設定ファイル
 ctxtax -s github             # 設定内の特定サーバーだけ
 ctxtax -m claude-sonnet-4-6  # 別のモデルでカウント/価格計算
 ctxtax --json                # 機械可読な出力
+ctxtax lint                  # MCP サーバー作者向けの省トークン提案
+ctxtax toolsearch            # deferred(Tool Search) と always-loaded のコストを試算
 ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # 単発サーバー（-- の後ろに）
 ```
 
@@ -80,6 +82,32 @@ ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # 単発サー�
   }
 }
 ```
+
+### Lint（MCP サーバー作者向け）
+
+`ctxtax lint` はツールを高価にしている要因 —— 長すぎる description（正確に測定）、肥大化したスキーマ、巨大な enum、冗長な title —— を、節約できるトークンの見積もりとともに指摘します：
+
+```text
+filesystem / search_files
+  ✖ [long-description] description is ~121 tokens (target ≤ 120). Keep only what Claude needs… (~1 token saveable)
+  • [verbose-tool] the whole tool is ~206 tokens — among the most expensive; trim the schema or split it.
+────────────────────────────────────────────────
+27 findings  ~859 tokens/msg recoverable
+```
+
+### Tool Search のモデリング
+
+Anthropic の [Tool Search](https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool) はツール定義を遅延ロードします —— すべてを先読みせず、必要時にロードします。`ctxtax toolsearch` は、それをオンにしたときの**先払い**コストを always-loaded コストと比較して試算します：
+
+```text
+  server                 always  deferred↑   note
+  filesystem               4.1k        0.6k   stdio — deferrable
+  github                  17.6k       17.6k   HTTP/Streamable — not deferred today (#40314)
+always-loaded total: 21.7k tokens
+deferred upfront:     18.2k tokens (−3.5k upfront; the rest loads on demand)
+```
+
+ここで判明する要点：**stdio サーバーは遅延可能ですが、HTTP/Streamable MCP サーバーは現状遅延されません**（[claude-code#40314](https://github.com/anthropics/claude-code/issues/40314)）—— いずれにせよ全額を先払いします。（試算：遅延可能なサーバーは検索インデックスに name + 1 行スタブのみを保持するものとしてモデル化。）
 
 ## CI でコンテキスト予算を強制する
 
@@ -117,8 +145,6 @@ jobs:
 
 ## ロードマップ
 
-- **Lint** —— MCP **サーバー作者**向けの実行可能な提案：長すぎる description、冗長なスキーマ、「ここは約 400 トークン削減できます」。
-- **Tool Search モデリング** —— `deferred` と `alwaysLoad` の比較で、先払い分とオンデマンド分を可視化。
 - **HTML レポート** —— 共有可能な自己完結の予算カード + README バッジ（`context cost: 2.1K ✓`）。
 
 ## コントリビュート
