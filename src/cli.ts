@@ -2,10 +2,11 @@
 import { existsSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { Command } from "commander";
-import { loadConfig } from "./mcp.js";
-import { DEFAULT_MODEL, PRICING } from "./count.js";
+import { loadConfig, listTools } from "./mcp.js";
+import { DEFAULT_MODEL, PRICING, makeCounter } from "./count.js";
 import { scan } from "./scan.js";
 import { render } from "./report.js";
+import { lintTools, renderLint, type Finding } from "./lint.js";
 import {
   snapshotFromScan,
   saveSnapshot,
@@ -112,6 +113,32 @@ program
       console.error(`\nctxtax: context tax ${head.total} exceeds budget ${o.maxTokens} — failing.`);
       process.exitCode = 1;
     }
+  });
+
+program
+  .command("lint")
+  .description("Suggest token savings for MCP server authors (long descriptions, bloated schema)")
+  .option("-c, --config <path>", "path to .mcp.json", ".mcp.json")
+  .option("-s, --server <name>", "only lint this server from the config")
+  .option("-m, --model <id>", `model to count against (${MODELS})`, DEFAULT_MODEL)
+  .option("--max-desc-tokens <n>", "warn when a tool description exceeds N tokens", (v) => parseInt(v, 10), 120)
+  .option("--max-tool-tokens <n>", "flag tools larger than N tokens", (v) => parseInt(v, 10), 1000)
+  .option("--json", "output raw JSON instead of a report")
+  .option("--no-color", "disable ANSI colors")
+  .action(async (o) => {
+    const servers = await resolveServers({ config: o.config, server: o.server });
+    const counter = makeCounter(o.model);
+    const all: Finding[] = [];
+    for (const s of servers) {
+      try {
+        const tools = await listTools(s);
+        all.push(...(await lintTools(s.name, tools, counter, { maxDescTokens: o.maxDescTokens, maxToolTokens: o.maxToolTokens })));
+      } catch (err) {
+        all.push({ server: s.name, tool: "—", rule: "error", severity: "warn", message: err instanceof Error ? err.message : String(err), estSavings: 0 });
+      }
+    }
+    if (o.json) console.log(JSON.stringify(all, null, 2));
+    else console.log(renderLint(all, o.color));
   });
 
 program.parseAsync().catch((err) => {

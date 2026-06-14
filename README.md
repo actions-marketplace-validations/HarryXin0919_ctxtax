@@ -70,7 +70,20 @@ ctxtax -c path/to/.mcp.json  # a specific config
 ctxtax -s github             # just one server from the config
 ctxtax -m claude-sonnet-4-6  # count/price against another model
 ctxtax --json                # machine-readable output
+ctxtax lint                  # token-saving tips for MCP server authors
 ctxtax -- npx -y @modelcontextprotocol/server-filesystem /tmp   # one-off server (after --)
+```
+
+### Lint (for MCP server authors)
+
+`ctxtax lint` flags what's making your tools expensive — over-long descriptions (measured exactly), bloated schemas, huge enums, redundant titles — with an estimate of the tokens you'd save:
+
+```text
+filesystem / search_files
+  ✖ [long-description] description is ~121 tokens (target ≤ 120). Keep only what Claude needs… (~1 token saveable)
+  • [verbose-tool] the whole tool is ~206 tokens — among the most expensive; trim the schema or split it.
+────────────────────────────────────────────────
+27 findings  ~859 tokens/msg recoverable
 ```
 
 `.mcp.json` is the standard Claude Code / Claude Desktop format:
@@ -120,7 +133,6 @@ The action fetches the base branch's `.ctxtax.json`, renders the per-tool diff, 
 
 ## Roadmap
 
-- **Lint** — actionable suggestions for MCP **server authors**: over-long descriptions, redundant schema, "this could be ~400 tokens lighter."
 - **Tool Search modelling** — `deferred` vs `alwaysLoad` comparison, so you see what's paid up-front vs on-demand.
 - **HTML report** — a shareable, self-contained budget card + a README badge (`context cost: 2.1K ✓`).
 
